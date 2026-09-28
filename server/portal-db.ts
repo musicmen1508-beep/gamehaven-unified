@@ -6,9 +6,13 @@ import { portalAdBanners, portalFavorites, portalGames } from "../drizzle/schema
 import { getDb } from "./db";
 import type { PortalGame } from "../shared/games";
 
+let localGames: PortalGame[] = structuredClone(defaultGames);
+const localFavorites = new Map<string, string[]>();
+let localBanners = structuredClone(emptyAdBannerSettings);
+
 export async function listPortalGames(): Promise<PortalGame[]> {
   const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
+  if (!db) return structuredClone(localGames);
   const existing = await db.select({ id: portalGames.id }).from(portalGames).limit(1);
   if (existing.length === 0) {
     for (const game of defaultGames) {
@@ -36,20 +40,28 @@ export async function listPortalGames(): Promise<PortalGame[]> {
 
 export async function updatePortalGame(slug: string, patch: { titles: PortalGame["titles"]; gameUrl: string | null; imageUrl: string }) {
   const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
+  if (!db) {
+    localGames = localGames.map(game => game.slug === slug ? { ...game, ...patch, updatedAt: new Date() } : game);
+    return;
+  }
   await db.update(portalGames).set(patch).where(eq(portalGames.slug, slug));
 }
 
 export async function getPortalFavorites(username: string): Promise<string[]> {
   const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
+  if (!db) return [...(localFavorites.get(username) ?? [])];
   const rows = await db.select({ gameSlug: portalFavorites.gameSlug }).from(portalFavorites).where(eq(portalFavorites.username, username)).orderBy(asc(portalFavorites.id));
   return rows.map(row => row.gameSlug);
 }
 
 export async function setPortalFavorite(username: string, gameSlug: string, favorite: boolean): Promise<string[]> {
   const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
+  if (!db) {
+    const current = localFavorites.get(username) ?? [];
+    const next = favorite ? [...new Set([gameSlug, ...current])] : current.filter(slug => slug !== gameSlug);
+    localFavorites.set(username, next);
+    return [...next];
+  }
   const condition = and(eq(portalFavorites.username, username), eq(portalFavorites.gameSlug, gameSlug));
   if (favorite) {
     await db.insert(portalFavorites).values({ username, gameSlug }).onDuplicateKeyUpdate({ set: { gameSlug: sql`gameSlug` } });
@@ -61,7 +73,7 @@ export async function setPortalFavorite(username: string, gameSlug: string, favo
 
 export async function getPortalAdBanners() {
   const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
+  if (!db) return structuredClone(localBanners);
   const rows = await db.select().from(portalAdBanners);
   const settings = structuredClone(emptyAdBannerSettings);
   for (const row of rows) settings[row.slot as AdSlot] = { imageUrl: row.imageUrl, targetUrl: row.targetUrl };
@@ -70,7 +82,10 @@ export async function getPortalAdBanners() {
 
 export async function updatePortalAdBanner(slot: AdSlot, imageUrl: string, targetUrl: string) {
   const db = await getDb();
-  if (!db) throw new Error("Database is unavailable");
+  if (!db) {
+    localBanners = { ...localBanners, [slot]: { imageUrl, targetUrl } };
+    return structuredClone(localBanners);
+  }
   await db.insert(portalAdBanners).values({ slot, imageUrl, targetUrl }).onDuplicateKeyUpdate({ set: { imageUrl, targetUrl } });
   return getPortalAdBanners();
 }
