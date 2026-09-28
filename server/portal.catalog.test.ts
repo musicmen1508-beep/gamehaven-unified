@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { categories, defaultGames, matchesPortalQuickView, normalizeCategory } from "../shared/games";
+import { categories, defaultGames, getPortalCoverUrl, matchesPortalQuickView, normalizeCategory } from "../shared/games";
 
 describe("default HTML5 game catalog", () => {
   it("keeps the original four game slugs and covers at the top", () => {
@@ -15,6 +15,7 @@ describe("default HTML5 game catalog", () => {
     expect(defaultGames).toHaveLength(180);
     expect(new Set(defaultGames.map(game => game.slug)).size).toBe(defaultGames.length);
     expect(defaultGames.every(game => game.imageUrl.trim().length > 0)).toBe(true);
+    expect(new Set(defaultGames.map(getPortalCoverUrl)).size).toBe(defaultGames.length);
     expect(defaultGames.every(game => game.titles.ru.trim() && game.titles.en.trim() && game.titles.zh.trim())).toBe(true);
   });
 

@@ -957,3 +957,32 @@ export const defaultGames: PortalGame[] = [
 ];
 
 export const localeLabels: Record<Locale, string> = { ru: "Русский", en: "English", zh: "简体中文" };
+
+const dedicatedCoverSlugs = new Set(defaultGames.slice(0, 12).map(game => game.slug));
+const sharedCoverUrls = new Set([
+  "/manus-storage/game-racing_26c9d0e9.jpg",
+  "/manus-storage/game-action_e9a7e28f.jpg",
+  "/manus-storage/game-puzzle_bae12f0f.jpg",
+  "/manus-storage/game-io_846bbfae.jpg",
+]);
+const coverPalette: Record<CategoryKey, [string, string]> = {
+  action: ["#ff6b6b", "#6d28d9"], adventure: ["#fb7185", "#0ea5e9"], arcade: ["#b7ff42", "#0f766e"],
+  board: ["#f59e0b", "#7c2d12"], card: ["#f472b6", "#7e22ce"], clicker: ["#facc15", "#ea580c"],
+  driving: ["#b7ff42", "#0891b2"], io: ["#22d3ee", "#2563eb"], puzzle: ["#67e8f9", "#4f46e5"],
+  shooting: ["#fb7185", "#991b1b"], simulation: ["#a78bfa", "#1d4ed8"], sports: ["#bef264", "#15803d"],
+  strategy: ["#fbbf24", "#b45309"], trivia: ["#c4b5fd", "#7c3aed"], word: ["#f9a8d4", "#be185d"],
+};
+
+function escapeSvgText(value: string) {
+  return value.replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" })[char] ?? char);
+}
+
+/** Returns a unique lightweight cover until an administrator uploads dedicated artwork. */
+export function getPortalCoverUrl(game: PortalGame) {
+  if (dedicatedCoverSlugs.has(game.slug) || !sharedCoverUrls.has(game.imageUrl)) return game.imageUrl;
+  const [from, to] = coverPalette[game.category];
+  const title = escapeSvgText(game.titles.ru);
+  const category = escapeSvgText(game.category.toUpperCase());
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="${from}"/><stop offset="1" stop-color="${to}"/></linearGradient></defs><rect width="800" height="500" fill="#07111f"/><path d="M0 390L800 30V500H0Z" fill="url(#g)" opacity=".92"/><circle cx="670" cy="125" r="155" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="2"/><circle cx="670" cy="125" r="105" fill="none" stroke="#fff" stroke-opacity=".14" stroke-width="2"/><text x="48" y="82" fill="#fff" fill-opacity=".72" font-family="Arial,sans-serif" font-size="20" font-weight="700" letter-spacing="4">${category}</text><text x="48" y="405" fill="#fff" font-family="Arial,sans-serif" font-size="42" font-weight="800">${title}</text><text x="48" y="445" fill="#fff" fill-opacity=".72" font-family="Arial,sans-serif" font-size="16">GAMEHAVEN</text></svg>`;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+}
