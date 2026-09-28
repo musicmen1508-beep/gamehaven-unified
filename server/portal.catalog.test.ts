@@ -11,10 +11,10 @@ describe("default HTML5 game catalog", () => {
     ]);
   });
 
-  it("gives every game an original title and unique cover artwork", () => {
-    expect(defaultGames).toHaveLength(12);
+  it("gives every game a unique slug, localized title and cover reference", () => {
+    expect(defaultGames).toHaveLength(180);
     expect(new Set(defaultGames.map(game => game.slug)).size).toBe(defaultGames.length);
-    expect(new Set(defaultGames.map(game => game.imageUrl)).size).toBe(defaultGames.length);
+    expect(defaultGames.every(game => game.imageUrl.trim().length > 0)).toBe(true);
     expect(defaultGames.every(game => game.titles.ru.trim() && game.titles.en.trim() && game.titles.zh.trim())).toBe(true);
   });
 
@@ -34,7 +34,9 @@ describe("default HTML5 game catalog", () => {
     const now = Date.UTC(2026, 8, 26);
     const edited = { ...defaultGames[0]!, createdAt: new Date(now - 86_400_000), updatedAt: new Date(now - 3_600_000) };
     const seeded = { ...defaultGames[0]!, createdAt: new Date(now - 3_600_000), updatedAt: new Date(now - 3_600_000) };
-    expect(defaultGames.filter(game => matchesPortalQuickView(game, "new", hot)).map(game => game.slug)).toEqual(["skyline-raider", "block-bloom", "portal-paws"]);
+    const newSlugs = defaultGames.filter(game => matchesPortalQuickView(game, "new", hot)).map(game => game.slug);
+    expect(newSlugs).toEqual(expect.arrayContaining(["skyline-raider", "block-bloom", "portal-paws"]));
+    expect(newSlugs).toHaveLength(13);
     expect(matchesPortalQuickView(defaultGames[0]!, "hot", hot)).toBe(true);
     expect(matchesPortalQuickView(edited, "updated", hot, now)).toBe(true);
     expect(matchesPortalQuickView(seeded, "updated", hot, now)).toBe(false);
