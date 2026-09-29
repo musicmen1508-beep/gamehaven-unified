@@ -965,6 +965,7 @@ const sharedCoverUrls = new Set([
   "/manus-storage/game-puzzle_bae12f0f.jpg",
   "/manus-storage/game-io_846bbfae.jpg",
 ]);
+const legacyCoverPattern = /\/manus-storage\/(?:game-|strike-point_|turbo-league_|block-bloom_|zero-zone_|circuit-sprint_|portal-paws_|goal-rush_|pixel-frontier_)/;
 const coverPalette: Record<CategoryKey, [string, string]> = {
   action: ["#ff6b6b", "#6d28d9"], adventure: ["#fb7185", "#0ea5e9"], arcade: ["#b7ff42", "#0f766e"],
   board: ["#f59e0b", "#7c2d12"], card: ["#f472b6", "#7e22ce"], clicker: ["#facc15", "#ea580c"],
@@ -979,7 +980,7 @@ function escapeSvgText(value: string) {
 
 /** Returns a unique lightweight cover until an administrator uploads dedicated artwork. */
 export function getPortalCoverUrl(game: PortalGame) {
-  if (dedicatedCoverSlugs.has(game.slug) || !sharedCoverUrls.has(game.imageUrl)) return game.imageUrl;
+  if (!legacyCoverPattern.test(game.imageUrl) && (dedicatedCoverSlugs.has(game.slug) || !sharedCoverUrls.has(game.imageUrl))) return game.imageUrl;
   const [from, to] = coverPalette[game.category];
   const title = escapeSvgText(game.titles.ru);
   const category = escapeSvgText(game.category.toUpperCase());

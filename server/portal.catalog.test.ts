@@ -19,6 +19,12 @@ describe("default HTML5 game catalog", () => {
     expect(defaultGames.every(game => game.titles.ru.trim() && game.titles.en.trim() && game.titles.zh.trim())).toBe(true);
   });
 
+  it("keeps legacy database cover URLs visible through generated fallbacks", () => {
+    const legacy = { ...defaultGames[12]!, imageUrl: "/manus-storage/game-action_e9a7e28f.jpg" };
+    expect(getPortalCoverUrl(legacy)).toMatch(/^data:image\/svg\+xml/);
+    expect(getPortalCoverUrl(defaultGames[0]!)).toMatch(/^\/manus-storage\/neon-drift_/);
+  });
+
   it("exposes the complete requested genre list in the requested order", () => {
     expect(categories).toEqual([
       "action", "adventure", "arcade", "board", "card", "clicker", "driving", "io",
