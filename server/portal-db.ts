@@ -18,15 +18,6 @@ export async function listPortalGames(): Promise<PortalGame[]> {
     for (const game of defaultGames) {
       await db.insert(portalGames).values(game).onDuplicateKeyUpdate({ set: { slug: sql`slug` } });
     }
-  } else {
-    const stored = await db.select({ slug: portalGames.slug, imageUrl: portalGames.imageUrl }).from(portalGames);
-    const defaults = new Map(defaultGames.map(game => [game.slug, game.imageUrl]));
-    for (const row of stored) {
-      const nextCover = defaults.get(row.slug);
-      if (nextCover && nextCover !== row.imageUrl && row.imageUrl.startsWith("/manus-storage/game-")) {
-        await db.update(portalGames).set({ imageUrl: nextCover }).where(eq(portalGames.slug, row.slug));
-      }
-    }
   }
   const rows = await db.select().from(portalGames).orderBy(asc(portalGames.id));
   return rows.map(row => ({

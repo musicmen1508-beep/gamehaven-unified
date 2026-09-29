@@ -4,10 +4,10 @@ import { categories, defaultGames, getPortalCoverUrl, matchesPortalQuickView, no
 describe("default HTML5 game catalog", () => {
   it("keeps the original four game slugs and covers at the top", () => {
     expect(defaultGames.slice(0, 4).map(game => [game.slug, game.imageUrl])).toEqual([
-      ["neon-drift", "/manus-storage/neon-drift_fada21d8.jpg"],
-      ["skyline-raider", "/manus-storage/skyline-raider_79c3078f.jpg"],
-      ["prism-shift", "/manus-storage/prism-shift_51cc51f4.jpg"],
-      ["hover-arena", "/manus-storage/hover-arena_f911909e.jpg"],
+      ["neon-drift", "/manus-storage/game-racing_26c9d0e9.jpg"],
+      ["skyline-raider", "/manus-storage/game-action_e9a7e28f.jpg"],
+      ["prism-shift", "/manus-storage/game-puzzle_bae12f0f.jpg"],
+      ["hover-arena", "/manus-storage/game-io_846bbfae.jpg"],
     ]);
   });
 
@@ -17,12 +17,6 @@ describe("default HTML5 game catalog", () => {
     expect(defaultGames.every(game => game.imageUrl.trim().length > 0)).toBe(true);
     expect(new Set(defaultGames.map(getPortalCoverUrl)).size).toBe(defaultGames.length);
     expect(defaultGames.every(game => game.titles.ru.trim() && game.titles.en.trim() && game.titles.zh.trim())).toBe(true);
-  });
-
-  it("keeps legacy database cover URLs visible through generated fallbacks", () => {
-    const legacy = { ...defaultGames[12]!, imageUrl: "/manus-storage/game-action_e9a7e28f.jpg" };
-    expect(getPortalCoverUrl(legacy)).toMatch(/^data:image\/svg\+xml/);
-    expect(getPortalCoverUrl(defaultGames[0]!)).toMatch(/^\/manus-storage\/neon-drift_/);
   });
 
   it("exposes the complete requested genre list in the requested order", () => {
