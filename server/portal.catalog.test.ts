@@ -4,10 +4,10 @@ import { categories, defaultGames, getPortalCoverUrl, matchesPortalQuickView, no
 describe("default HTML5 game catalog", () => {
   it("keeps the original four game slugs and covers at the top", () => {
     expect(defaultGames.slice(0, 4).map(game => [game.slug, game.imageUrl])).toEqual([
-      ["neon-drift", "/manus-storage/game-racing_26c9d0e9.jpg"],
-      ["skyline-raider", "/manus-storage/game-action_e9a7e28f.jpg"],
-      ["prism-shift", "/manus-storage/game-puzzle_bae12f0f.jpg"],
-      ["hover-arena", "/manus-storage/game-io_846bbfae.jpg"],
+      ["neon-drift", "/manus-storage/game-racing_a2f35c8c.jpg"],
+      ["skyline-raider", "/manus-storage/game-action_ecc62de8.jpg"],
+      ["prism-shift", "/manus-storage/game-puzzle_7dd17d86.jpg"],
+      ["hover-arena", "/manus-storage/game-io_f68f3b3f.jpg"],
     ]);
   });
 
